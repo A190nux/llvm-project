@@ -551,6 +551,7 @@ static Value createLinalgBodyCalculationForElementwiseOp(
         Value clamped = rewriter.create<arith::MinimumFOp>(loc, rounded, intMinFP);
         return rewriter.create<arith::FPToSIOp>(loc, dstTy, clamped);
       }
+      
       // Due to earlier check we know exponant range is big enough to represent
       // int min. We can therefore rely on int max + 1 being representable as
       auto minClampedFP =
