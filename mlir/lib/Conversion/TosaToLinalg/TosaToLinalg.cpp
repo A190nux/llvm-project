@@ -539,10 +539,10 @@ static Value createLinalgBodyCalculationForElementwiseOp(
 
       auto intMinFP = rewriter.create<arith::ConstantOp>(
           loc, rewriter.getFloatAttr(
-                    getElementTypeOrSelf(srcTy),
-                    APInt::getSignedMinValue(dstTy.getIntOrFloatBitWidth())
-                        .getSExtValue()));
-                        
+                  getElementTypeOrSelf(srcTy),
+                  APInt::getSignedMinValue(dstTy.getIntOrFloatBitWidth())
+                      .getSExtValue()));
+
       // Check whether the mantissa has enough bits to represent int max.
       if (cast<FloatType>(srcTy).getFPMantissaWidth() >=
           dstTy.getIntOrFloatBitWidth() - 1) {
