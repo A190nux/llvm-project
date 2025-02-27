@@ -539,10 +539,9 @@ static Value createLinalgBodyCalculationForElementwiseOp(
 
       auto intMinFP = rewriter.create<arith::ConstantOp>(
           loc, rewriter.getFloatAttr(
-                  getElementTypeOrSelf(srcTy),
-                  APInt::getSignedMinValue(dstTy.getIntOrFloatBitWidth())
-                      .getSExtValue()));
-  
+                    getElementTypeOrSelf(srcTy),
+                    APInt::getSignedMinValue(dstTy.getIntOrFloatBitWidth())
+                        .getSExtValue()));
       // Check whether the mantissa has enough bits to represent int max.
       if (cast<FloatType>(srcTy).getFPMantissaWidth() >=
           dstTy.getIntOrFloatBitWidth() - 1) {
@@ -552,10 +551,8 @@ static Value createLinalgBodyCalculationForElementwiseOp(
         Value clamped = rewriter.create<arith::MinimumFOp>(loc, rounded, intMinFP);
         return rewriter.create<arith::FPToSIOp>(loc, dstTy, clamped);
       }
-    
       // Due to earlier check we know exponant range is big enough to represent
       // int min. We can therefore rely on int max + 1 being representable as
-      // well because it's just int min with a positive sign. So clamp against min.
       auto minClampedFP =
           rewriter.create<arith::MaximumFOp>(loc, rounded, intMinFP);
       auto minClamped =
