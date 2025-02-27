@@ -563,9 +563,7 @@ static Value createLinalgBodyCalculationForElementwiseOp(
           loc, arith::CmpFPredicate::UGE, rounded, intMinFP);
       return rewriter.create<arith::SelectOp>(loc, overflow, minClamped,
                                               minClamped);
-  }
-  
-  
+    }
 
     // Casting to boolean, integers need to only be checked as not-equal to
     // zero.
