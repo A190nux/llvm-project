@@ -534,7 +534,9 @@ static Value createLinalgBodyCalculationForElementwiseOp(
             loc, rewriter.getIntegerAttr(
                      getElementTypeOrSelf(dstTy),
                      APInt::getSignedMinValue(dstTy.getIntOrFloatBitWidth())));
-        return rewriter.create<arith::SelectOp>(loc, underflow, intMin, conv);
+        auto maxClamped =
+            rewriter.create<arith::SelectOp>(loc, overflow, intMin, conv);
+        return rewriter.create<arith::SelectOp>(loc, underflow, intMin, maxClamped);
       }
 
       auto intMinFP = rewriter.create<arith::ConstantOp>(
