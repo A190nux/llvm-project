@@ -551,7 +551,16 @@ static Value createLinalgBodyCalculationForElementwiseOp(
         // Int min can also be represented since it is a power of two and thus
         // consists of a single leading bit. Therefore we can clamp the input
         // in the floating-point domain.
-        Value clamped = rewriter.create<arith::MinimumFOp>(loc, rounded, intMinFP);
+
+        auto intMaxFP = rewriter.create<arith::ConstantOp>(
+            loc, rewriter.getFloatAttr(
+                     getElementTypeOrSelf(srcTy),
+                     APInt::getSignedMaxValue(dstTy.getIntOrFloatBitWidth())
+                         .getSExtValue()));
+
+        Value greaterThanMax = rewriter.create<arith::CmpFOp>(loc, arith::CmpFPredicate::OGT, rounded, intMaxFP);
+        Value maxOrMin = rewriter.create<arith::SelectOp>(loc, greaterThanMax, intMinFP, rounded);
+        Value clamped = rewriter.create<arith::MaximumFOp>(loc, maxOrMin, intMinFP);
         return rewriter.create<arith::FPToSIOp>(loc, dstTy, clamped);
       }
 
