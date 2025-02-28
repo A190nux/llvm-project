@@ -557,13 +557,27 @@ static Value createLinalgBodyCalculationForElementwiseOp(
 
       // Due to earlier check we know exponant range is big enough to represent
       // int min. We can therefore rely on int max + 1 being representable as
+      // well because it's just int min with a positive sign. So clamp the min
+      // value and compare against that to select the max int value if needed.
+      auto intMaxPlusOneFP = rewriter.create<arith::ConstantOp>(
+          loc, rewriter.getFloatAttr(
+                   getElementTypeOrSelf(srcTy),
+                   static_cast<double>(
+                       APInt::getSignedMaxValue(dstTy.getIntOrFloatBitWidth())
+                           .getSExtValue()) +
+                       1.0f));
+
+      auto intMin = rewriter.create<arith::ConstantOp>(
+          loc, rewriter.getIntegerAttr(
+                   getElementTypeOrSelf(dstTy),
+                   APInt::getSignedMinValue(dstTy.getIntOrFloatBitWidth())));
       auto minClampedFP =
           rewriter.create<arith::MaximumFOp>(loc, rounded, intMinFP);
       auto minClamped =
           rewriter.create<arith::FPToSIOp>(loc, dstTy, minClampedFP);
       auto overflow = rewriter.create<arith::CmpFOp>(
-          loc, arith::CmpFPredicate::UGE, rounded, intMinFP);
-      return rewriter.create<arith::SelectOp>(loc, overflow, minClamped,
+          loc, arith::CmpFPredicate::UGE, rounded, intMaxPlusOneFP);
+      return rewriter.create<arith::SelectOp>(loc, overflow, intMin,
                                               minClamped);
     }
 
